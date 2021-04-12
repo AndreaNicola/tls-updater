@@ -10,9 +10,17 @@ Build with :
 docker build -t tls-updater:0.0.1 .
 ```
 
+You can also pull an already built image from docker hub:
+
+```
+docker pull docker push andreanicola/tls-updater:0.0.1
+```
+
 # Deploy
 
 Apply the k8s the manifest attached with this repo (kubernetes-manifest.yaml)
+
+The only environment variabile you must take care of is "IN_CLUSTER". Set this variable to "true" if you're deploying this container in a kubernetes cluster. If you're not setting this variable of setting it to "false" the container will look for a kubeconfig file in the default path :-)
 
 # Usage
 
