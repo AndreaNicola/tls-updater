@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tls-updater
+spec:
+  finalizers:
+    - kubernetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tls-updater-cr
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "secrets" ]
+    verbs: [ "get", "update", "watch", "list" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tls-updater-crb
+subjects:
+  - kind: ServiceAccount
+    name: tls-updater-sa
+    namespace: tls-updater
+roleRef:
+  kind: ClusterRole
+  name: tls-updater-cr
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tls-updater-sa
+  namespace: tls-updater
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: tls-updater
+  namespace: tls-updater
+  labels:
+    app: tls-updater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tls-updater
+  template:
+    metadata:
+      labels:
+        app: tls-updater
+    spec:
+      serviceAccountName: tls-updater-sa
+      containers:
+        - name: tls-updater
+          image: docker.io/andreanicola/tls-updater:0.0.1
+          env:
+            - name: IN_CLUSTER
+              value: "true"
+          imagePullPolicy: Always
+      restartPolicy: Always
